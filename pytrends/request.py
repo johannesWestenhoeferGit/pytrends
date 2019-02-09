@@ -2,6 +2,8 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 import json
 import sys
+import os
+import random
 
 from pandas.io.json.normalize import nested_to_record
 import pandas as pd
@@ -39,6 +41,7 @@ class TrendReq(object):
         """
         Initialize default values for params
         """
+        self.user_agent = self.set_user_agent()
         # google rate limit
         self.google_rl = 'You have reached your quota limit. Please try again later.'
         self.results = None
@@ -53,7 +56,8 @@ class TrendReq(object):
         self.cookies = dict(filter(
             lambda i: i[0] == 'NID',
             requests.get(
-                'https://trends.google.com/?geo={geo}'.format(geo=hl[-2:])
+                'https://trends.google.com/?geo={geo}'.format(geo=hl[-2:]),
+                headers = self.user_agent
             ).cookies.items()
         ))
 
@@ -63,6 +67,20 @@ class TrendReq(object):
         self.interest_by_region_widget = dict()
         self.related_topics_widget_list = list()
         self.related_queries_widget_list = list()
+    
+    def set_user_agent(self):
+        """
+         Randomly chooses a user-agent from a list of user-agent's.
+        """
+        try:
+            user_agent_file = open("user_agents.txt", "r")
+            possible_agents = [line for line in user_agent_file]
+            agent = random.choice(possible_agents)
+            return {
+                "User-Agent": agent.strip()
+            }
+        except:
+            return None # default value of requests if no user-agents given
 
     def _get_data(self, url, method=GET_METHOD, trim_chars=0, **kwargs):
         """Send a request to Google and return the JSON response as a Python object
@@ -133,6 +151,7 @@ class TrendReq(object):
             method=TrendReq.GET_METHOD,
             params=self.token_payload,
             trim_chars=4,
+            headers = self.user_agent
         )['widgets']
 
         # order of the json matters...
