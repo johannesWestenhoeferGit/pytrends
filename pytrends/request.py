@@ -37,11 +37,11 @@ class TrendReq(object):
     SUGGESTIONS_URL = 'https://trends.google.com/trends/api/autocomplete/'
     CATEGORIES_URL = 'https://trends.google.com/trends/api/explore/pickers/category'
 
-    def __init__(self, hl='en-US', tz=360, geo='', proxies=''):
+    def __init__(self, hl='en-US', tz=360, geo='', proxies='', user_agent_path="user_agents.txt"):
         """
         Initialize default values for params
         """
-        self.user_agent = self.set_user_agent()
+        self.user_agent = self.set_user_agent(path=user_agent_path)
         # google rate limit
         self.google_rl = 'You have reached your quota limit. Please try again later.'
         self.results = None
@@ -68,12 +68,12 @@ class TrendReq(object):
         self.related_topics_widget_list = list()
         self.related_queries_widget_list = list()
     
-    def set_user_agent(self):
+    def set_user_agent(self,path):
         """
          Randomly chooses a user-agent from a list of user-agent's.
         """
         try:
-            user_agent_file = open("user_agents.txt", "r")
+            user_agent_file = open(path, "r")
             possible_agents = [line for line in user_agent_file]
             agent = random.choice(possible_agents)
             return {
